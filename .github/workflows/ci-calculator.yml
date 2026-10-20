@@ -1,6 +1,5 @@
 name: Java CI with Maven
 
-# Trigger: run on push to main and on pull requests targeting main
 on:
   push:
     branches: [ main ]
@@ -9,34 +8,35 @@ on:
 
 jobs:
   build:
-    # Runner environment
     runs-on: ubuntu-latest
+    
+    # ===== 新增：Build Matrix 配置 =====
+    strategy:
+      matrix:
+        java-version: [ '17', '21' ]
 
     steps:
-      # Step 1: checkout source code
       - name: Checkout source code
         uses: actions/checkout@v4
 
-      # Step 2: setup JDK 17 (matches local development environment)
-      - name: Set up JDK 17
+      # ===== 修改：使用 matrix 里的版本 =====
+      - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: ${{ matrix.java-version }}
           distribution: 'temurin'
 
-      # Step 3: cache Maven dependencies to speed up repeated builds
+      # ===== 修改：缓存 key 里加上 JDK 版本，避免两个版本互相覆盖缓存 =====
       - name: Cache Maven dependencies
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          key: ${{ runner.os }}-maven-${{ matrix.java-version }}-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
-            ${{ runner.os }}-maven-
+            ${{ runner.os }}-maven-${{ matrix.java-version }}-
 
-      # Step 4: compile all Java source files
       - name: Compile source code
         run: mvn clean compile
 
-      # Step 5: run all JUnit 5 tests from Lab 4
       - name: Run unit tests
         run: mvn test
