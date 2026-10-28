@@ -10,7 +10,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     
-    # ===== 新增：Build Matrix 配置 =====
     strategy:
       matrix:
         java-version: [ '17', '21' ]
@@ -19,14 +18,12 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v4
 
-      # ===== 修改：使用 matrix 里的版本 =====
       - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v4
         with:
           java-version: ${{ matrix.java-version }}
           distribution: 'temurin'
 
-      # ===== 修改：缓存 key 里加上 JDK 版本，避免两个版本互相覆盖缓存 =====
       - name: Cache Maven dependencies
         uses: actions/cache@v4
         with:
@@ -40,3 +37,13 @@ jobs:
 
       - name: Run unit tests
         run: mvn test
+
+  docker-build:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+      
+      - name: Build Docker image
+        run: docker build -t calculator:ci .
