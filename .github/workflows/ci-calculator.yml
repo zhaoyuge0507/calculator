@@ -9,21 +9,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
     strategy:
       matrix:
         java-version: [ '17', '21' ]
-
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v4
         with:
           java-version: ${{ matrix.java-version }}
           distribution: 'temurin'
-
       - name: Cache Maven dependencies
         uses: actions/cache@v4
         with:
@@ -31,10 +26,8 @@ jobs:
           key: ${{ runner.os }}-maven-${{ matrix.java-version }}-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-${{ matrix.java-version }}-
-
       - name: Compile source code
         run: mvn clean compile
-
       - name: Run unit tests
         run: mvn test
 
@@ -42,7 +35,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source code
+      - name: Checkout code
         uses: actions/checkout@v4
       
       - name: Build Docker image
